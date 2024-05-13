@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: airflow
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+
+  airflow-webserver:
+    image: apache/airflow:latest
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__FERNET_KEY: 'YOUR_FERNET_KEY'
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+    ports:
+      - "8080:8080"  # Forward host port 8080 to container port 8080
+
+volumes:
+  postgres_data:
